@@ -5,9 +5,6 @@ import com.marcos.studyasistant.usersservice.dto.UserRequestDto;
 import com.marcos.studyasistant.usersservice.dto.UserResponseDto;
 import com.marcos.studyasistant.usersservice.dto.UserUpdateDto;
 import com.marcos.studyasistant.usersservice.service.UserService;
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotEmpty;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
@@ -25,7 +22,7 @@ public class UserController {
 
     // CRUD operations for User entity
     @PostMapping
-    public ResponseEntity<UserResponseDto> createUser(@RequestBody @Valid UserRequestDto userRequestDto) {
+    public ResponseEntity<UserResponseDto> createUser(@RequestBody UserRequestDto userRequestDto) {
         UserResponseDto userResponseDto = userService.createUser(userRequestDto);
         return ResponseEntity.ok(userResponseDto);
     }
@@ -37,12 +34,12 @@ public class UserController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<UserResponseDto> updateUser(@PathVariable UUID id, @RequestBody @Valid UserUpdateDto userUpdateDto) {
+    public ResponseEntity<UserResponseDto> updateUser(@PathVariable UUID id, @RequestBody UserUpdateDto userUpdateDto) {
         UserResponseDto userResponseDto = userService.updateUser(id, userUpdateDto);
         return ResponseEntity.ok(userResponseDto);
     }
 
-    public ResponseEntity updatePassword(@PathVariable UUID id, @RequestBody @Valid UserPasswordUpdateDto userPasswordUpdateDto) {
+    public ResponseEntity updatePassword(@PathVariable UUID id, @RequestBody UserPasswordUpdateDto userPasswordUpdateDto) {
         userService.updatePassword(id, userPasswordUpdateDto.currentPassword() ,userPasswordUpdateDto.newPassword());
         return ResponseEntity.ok("Password updated successfully");
     }

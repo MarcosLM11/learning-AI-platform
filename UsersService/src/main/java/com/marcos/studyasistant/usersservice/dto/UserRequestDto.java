@@ -5,10 +5,10 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 
 public record UserRequestDto (
-        @NotBlank @NotEmpty String username,
-        @NotBlank @NotEmpty String password,
-        @NotBlank @NotEmpty @Email String email,
-        @NotBlank @NotEmpty String name,
-        @NotBlank String surname,
-        @NotBlank String phone
+        String username,
+        String password,
+        String email,
+        String name,
+        String surname,
+        String phone
 ) {}

@@ -1,0 +1,20 @@
+  _    _    _____   ______   _____     _____        _____   ______   _____   __      __  _____    _____   ______
+ | |  | |  / ____| |  ____| |  __ \   / ____|      / ____| |  ____| |  __ \  \ \    / / |_   _|  / ____| |  ____|
+ | |  | | | (___   | |__    | |__) | | (___       | (___   | |__    | |__) |  \ \  / /    | |   | |      | |__
+ | |  | |  \___ \  |  __|   |  _  /   \___ \       \___ \  |  __|   |  _  /    \ \/ /     | |   | |      |  __|
+ | |__| |  ____) | | |____  | | \ \   ____) |      ____) | | |____  | | \ \     \  /     _| |_  | |____  | |____
+  \____/  |_____/  |______| |_|  \_\ |_____/      |_____/  |______| |_|  \_\     \/     |_____|  \_____| |______|
+
+
+Users Service
+
+Spring Boot Version: ${spring-boot.version}
+Java Version: ${java.version}
+This is a Users Service for managing user accounts and profiles.
+It provides user registration, authentication, and profile management functionalities.
+
+For more information, contact us at: marcoslopezmarinn@gmail.com
+
+Author: Marcos López Marín
+
+License: Apache License 2.0
