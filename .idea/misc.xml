@@ -7,10 +7,12 @@
         <option value="$PROJECT_DIR$/UsersService/pom.xml" />
         <option value="$PROJECT_DIR$/config-server/pom.xml" />
         <option value="$PROJECT_DIR$/ConfigServer/pom.xml" />
+        <option value="$PROJECT_DIR$/EurekaServer/pom.xml" />
       </list>
     </option>
     <option name="ignoredFiles">
       <set>
+        <option value="$PROJECT_DIR$/EurekaServer/pom.xml" />
         <option value="$PROJECT_DIR$/config-server/pom.xml" />
       </set>
     </option>
