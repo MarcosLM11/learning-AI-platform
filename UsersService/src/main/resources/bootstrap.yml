@@ -9,3 +9,15 @@ spring:
 
   profiles:
     active: dev
+
+logging:
+  level:
+    org.apache.kafka: WARN
+    org.apache.kafka.clients: WARN
+    org.apache.kafka.clients.consumer: WARN
+    org.apache.kafka.clients.producer: WARN
+    org.apache.kafka.common: WARN
+    org.springframework.kafka: WARN
+    org.springframework.cloud.stream: WARN
+    org.springframework.cloud.bus: INFO
+    org.springframework.integration: WARN

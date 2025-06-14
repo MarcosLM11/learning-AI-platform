@@ -1,5 +1,6 @@
 package com.marcos.studyasistant.usersservice.controller;
 
+import com.marcos.studyasistant.usersservice.config.UserConfig;
 import com.marcos.studyasistant.usersservice.dto.UserPasswordUpdateDto;
 import com.marcos.studyasistant.usersservice.dto.UserRequestDto;
 import com.marcos.studyasistant.usersservice.dto.UserResponseDto;
@@ -15,9 +16,11 @@ import java.util.UUID;
 public class UserController {
 
     private final UserService userService;
+    private final UserConfig userConfig;
 
-    public UserController(UserService userService) {
+    public UserController(UserService userService, UserConfig userConfig) {
         this.userService = userService;
+        this.userConfig = userConfig;
     }
 
     // CRUD operations for User entity
@@ -39,6 +42,7 @@ public class UserController {
         return ResponseEntity.ok(userResponseDto);
     }
 
+    @PutMapping("/{id}/password")
     public ResponseEntity updatePassword(@PathVariable UUID id, @RequestBody UserPasswordUpdateDto userPasswordUpdateDto) {
         userService.updatePassword(id, userPasswordUpdateDto.currentPassword() ,userPasswordUpdateDto.newPassword());
         return ResponseEntity.ok("Password updated successfully");
@@ -52,9 +56,15 @@ public class UserController {
 
     //Additional methods for user management
 
-    @GetMapping
+    @GetMapping()
     public ResponseEntity<List<UserResponseDto>> getAllUsers() {
         List<UserResponseDto> users = userService.getAllUsers();
         return ResponseEntity.ok(users);
+    }
+
+    @GetMapping("/test")
+    public ResponseEntity<String> testConfigVariable() {
+        String variableDePrueba = userConfig.getVariableDePrueba();
+        return ResponseEntity.ok("Variable de prueba: " + variableDePrueba);
     }
 }
