@@ -1,0 +1,22 @@
+  ______               _            _____
+ |  ____|             | |          / ____|
+ | |__  _   _ _ __ ___| | ____ _  | (___   ___ _ ____   _____ _ __
+ |  __|| | | | '__/ _ \ |/ / _` |  \___ \ / _ \ '__\ \ / / _ \ '__|
+ | |___| |_| | | |  __/   < (_| |  ____) |  __/ |   \ V /  __/ |
+ |______\__,_|_|  \___|_|\_\__,_| |_____/ \___|_|    \_/ \___|_|
+
+
+${application.title} ${application.version}
+
+Eureka Server
+
+Spring Boot Version: ${spring-boot.version}
+Java Version: ${java.version}
+This is a Eureka Server for service discovery in a microservices architecture.
+It provides a registry for microservices to register themselves and discover other services.
+
+For more information, contact us at: marcoslopezmarinn@gmail.com
+
+Author: Marcos López Marín
+
+License: Apache License 2.0
