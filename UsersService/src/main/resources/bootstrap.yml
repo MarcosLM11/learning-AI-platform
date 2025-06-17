@@ -4,8 +4,13 @@ spring:
 
   cloud:
     config:
-      uri: http://localhost:8888
-      fail-fast: true
+      discovery:
+        enabled: true
+        service-id: config-server
+      fail-fas: true
+      retry:
+        initial-interval: 1000
+        max-attempts: 6
 
   profiles:
     active: dev
@@ -21,3 +26,8 @@ logging:
     org.springframework.cloud.stream: WARN
     org.springframework.cloud.bus: INFO
     org.springframework.integration: WARN
+
+eureka:
+    client:
+      service-url:
+        defaultZone: http://localhost:8761/eureka/
