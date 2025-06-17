@@ -1,0 +1,7 @@
+server:
+  port: 8081
+
+# Configuración local de emergencia por si Config Server falla
+spring:
+  application:
+    name: documents-service
