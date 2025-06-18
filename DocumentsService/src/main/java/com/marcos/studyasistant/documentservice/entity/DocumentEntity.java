@@ -15,7 +15,7 @@ import java.util.UUID;
 @Getter @Setter @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Document {
+public class DocumentEntity {
     @Id
     @GeneratedValue(generator = "UUID")
     @GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")

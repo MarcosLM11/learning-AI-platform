@@ -20,7 +20,7 @@ public class DocumentTag {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "document_id", nullable = false)
-    private Document document;
+    private DocumentEntity document;
 
     @Column(name = "tag", nullable = false, length = 100)
     private String tag;

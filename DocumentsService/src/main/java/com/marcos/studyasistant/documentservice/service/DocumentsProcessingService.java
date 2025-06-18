@@ -13,11 +13,4 @@ public interface DocumentsProcessingService {
      */
     CompletableFuture<Void> processDocument(UUID documentId);
 
-    /**
-     * Extracts text from a document stored at the given path.
-     *
-     * @param storagePath the path where the document is stored
-     * @return the extracted text as a String
-     */
-    String extractTextFromDocument(String storagePath) throws Exception;
 }

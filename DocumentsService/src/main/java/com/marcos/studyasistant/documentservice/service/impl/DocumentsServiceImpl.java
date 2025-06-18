@@ -44,7 +44,6 @@ public class DocumentsServiceImpl implements DocumentsService {
             String storagePath = documentsStorageService.uploadDocument(file);
 
             DocumentEntity document = DocumentEntity.builder()
-                    .filename(file.getName())
                     .originalFilename(file.getOriginalFilename())
                     .contentType(file.getContentType())
                     .fileSize(file.getSize())
@@ -79,7 +78,7 @@ public class DocumentsServiceImpl implements DocumentsService {
 
         return new DocumentContentResponseDto(
                 document.getId(),
-                document.getFilename(),
+                document.getOriginalFilename(),
                 document.getExtractedText(),
                 document.getStatus()
         );
@@ -91,7 +90,7 @@ public class DocumentsServiceImpl implements DocumentsService {
                 .orElseThrow(() -> new DocumentNotFoundException("Document not found"));
 
         try {
-            documentsStorageService.deleteDocument(document.getStoragePath());
+            documentsStorageService.deleteDocument(document.getFilePath());
             documentsRepository.delete(document);
         } catch (Exception e) {
             throw new DocumentProcessingException("Failed to delete document : " + e.getMessage());
