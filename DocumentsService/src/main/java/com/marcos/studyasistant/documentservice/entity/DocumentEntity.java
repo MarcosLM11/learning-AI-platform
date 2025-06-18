@@ -3,7 +3,11 @@ package com.marcos.studyasistant.documentservice.entity;
 import com.marcos.studyasistant.documentservice.entity.enums.ProcessingStatus;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.GenericGenerator;
+
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -11,37 +15,58 @@ import java.util.UUID;
 @Getter @Setter @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class DocumentEntity {
+public class Document {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(generator = "UUID")
+    @GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
     private UUID id;
 
-    @Column(nullable = false)
-    private String filename;
+    @Column(name = "user_id", nullable = false)
+    private UUID userId;
 
-    @Column(nullable = false)
+    @Column(name = "original_filename", nullable = false, length = 255)
     private String originalFilename;
 
-    @Column(nullable = false)
-    private String contentType;
-
-    @Column(nullable = false)
+    @Column(name = "file_size", nullable = false)
     private Long fileSize;
 
-    @Column(nullable = false)
-    private String storagePath;
+    @Column(name = "mime_type", nullable = false, length = 100)
+    private String mimeType;
 
-    @Column(columnDefinition = "TEXT")
-    private String extractedText;
+    @Column(name = "file_path", nullable = false, length = 500)
+    private String filePath;
 
     @Enumerated(EnumType.STRING)
-    private ProcessingStatus status;
+    @Column(name = "status", length = 20)
+    private ProcessingStatus status = ProcessingStatus.UPLOADED;
 
-    @Column(nullable = false)
-    private LocalDateTime uploadedAt;
+    @Lob
+    @Column(name = "extracted_text")
+    private String extractedText;
 
+    @Column(name = "page_count")
+    private Integer pageCount;
+
+    @Column(name = "language_detected", length = 10)
+    private String languageDetected;
+
+    @Lob
+    @Column(name = "processing_error")
+    private String processingError;
+
+    @Column(name = "created_at")
+    private LocalDateTime createdAt;
+
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
+
+    @Column(name = "processed_at")
     private LocalDateTime processedAt;
 
-    @Column(columnDefinition = "TEXT")
-    private String errorMessage;
+    // Relationships
+    @OneToMany(mappedBy = "document", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<DocumentProcessingLog> processingLogs = new ArrayList<>();
+
+    @OneToMany(mappedBy = "document", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<DocumentTag> tags = new ArrayList<>();
 }

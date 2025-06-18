@@ -8,8 +8,18 @@ services:
     ports:
       - '5432:5432'
     volumes:
-      # Ensure this path is correct for your setup
       - 'postgres_data:/var/lib/postgresql/data_user_db'
+
+  postgres_documents_db:
+    image: 'postgres:latest'
+    environment:
+      - 'POSTGRES_DB=sa_documents_db'
+      - 'POSTGRES_PASSWORD=postgres'
+      - 'POSTGRES_USER=postgres'
+    ports:
+      - '5433:5432'
+    volumes:
+      - 'postgres_data:/var/lib/postgresql/data_documents_db'
 
   kafka:
     image: bitnami/kafka:latest
@@ -29,6 +39,20 @@ services:
     volumes:
       - kafka-data:/bitnami/kafka
 
+  minio:
+    image: minio/minio
+    container_name: minio
+    ports:
+      - "9000:9000"  # API de MinIO
+      - "9001:9001"  # Consola web
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    command: server /data --console-address ":9001"
+    volumes:
+      - minio_data:/data
+
 volumes:
   postgres_data:
   kafka-data:
+  minio_data:

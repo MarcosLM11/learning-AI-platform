@@ -5,6 +5,7 @@ import com.marcos.studyasistant.documentservice.dto.DocumentResponseDto;
 import com.marcos.studyasistant.documentservice.dto.DocumentUploadRequestDto;
 import com.marcos.studyasistant.documentservice.service.DocumentsService;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.UUID;
@@ -21,7 +22,7 @@ public class DocumentsController {
 
     @PostMapping("/upload")
     public ResponseEntity<DocumentResponseDto> uploadDocument(
-            @RequestBody DocumentUploadRequestDto documentUploadRequestDto) {
+            @ModelAttribute DocumentUploadRequestDto documentUploadRequestDto) {
 
         DocumentResponseDto response = documentsService.uploadDocument(documentUploadRequestDto);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
@@ -40,7 +41,7 @@ public class DocumentsController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteDocument(@RequestParam UUID id) {
+    public ResponseEntity<Void> deleteDocument(@PathVariable UUID id) {
         documentsService.deleteDocument(id);
         return ResponseEntity.noContent().build();
     }
