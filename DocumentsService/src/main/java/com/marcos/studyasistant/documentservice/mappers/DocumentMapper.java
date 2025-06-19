@@ -10,14 +10,19 @@ public class DocumentMapper {
     public DocumentResponseDto from(DocumentEntity document) {
         return  new DocumentResponseDto(
                 document.getId(),
-                document.getFilename(),
+                document.getUserId(),
                 document.getOriginalFilename(),
-                document.getContentType(),
                 document.getFileSize(),
+                document.getMimeType(),
+                document.getFilePath(),
                 document.getStatus(),
-                document.getUploadedAt(),
-                "Admin",
+                document.getPageCount(),
+                document.getLanguageDetected(),
+                document.getProcessingError(),
+                document.getCreatedAt(),
+                document.getUpdatedAt(),
                 document.getProcessedAt(),
-                document.getErrorMessage());
+                document.getProcessingLogs(),
+                document.getTags());
     }
 }

@@ -1,6 +1,6 @@
 package com.marcos.studyasistant.documentservice.service.impl;
 
-import com.marcos.studyasistant.documentservice.entity.LanguageDetectionResult;
+import com.marcos.studyasistant.documentservice.dto.LanguageDetectionResultDto;
 import com.marcos.studyasistant.documentservice.service.LanguageDetectionService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.tika.language.detect.LanguageDetector;
@@ -22,28 +22,34 @@ public class TikaLanguageDetectionServiceImpl implements LanguageDetectionServic
     private double confidenceThreshold;
 
     public TikaLanguageDetectionServiceImpl() {
-        // Inicializamos el detector de idioma
-        this.languageDetector = LanguageDetector.getDefaultLanguageDetector();
+        LanguageDetector tempDetector = null;
         try {
-            this.languageDetector.loadModels();
+            tempDetector = LanguageDetector.getDefaultLanguageDetector();
+            tempDetector.loadModels();
             log.info("LanguageDetectionService initialized with Apache Tika");
         } catch (Exception e) {
-            log.error("Error initializing Tika LanguageDetector", e);
-            throw new RuntimeException("Failed to initialize language detector", e);
+            log.warn("Language detector not available, falling back to default behavior: {}", e.getMessage());
+            tempDetector = null;
         }
+        this.languageDetector = tempDetector;
     }
 
     @Override
-    public LanguageDetectionResult detectLanguage(String text) {
+    public LanguageDetectionResultDto detectLanguage(String text) {
 
         if (isTextEmpty(text)) {
-            return LanguageDetectionResult.unknown("Text is empty or null");
+            return LanguageDetectionResultDto.unknown("Text is empty or null");
+        }
+
+        // Si no hay detector disponible, retornamos unknown
+        if (languageDetector == null) {
+            return LanguageDetectionResultDto.unknown("Language detector not available");
         }
 
         String cleanText = cleanText(text);
 
         if (isTextTooShort(cleanText)) {
-            return LanguageDetectionResult.unknown(
+            return LanguageDetectionResultDto.unknown(
                     String.format("Text too short (%d chars), minimum required: %d",
                             cleanText.length(), minTextLength));
         }
@@ -56,21 +62,20 @@ public class TikaLanguageDetectionServiceImpl implements LanguageDetectionServic
             log.debug("Language detected: {} with confidence: {}", detectedLanguage, confidence);
 
             if (confidence < confidenceThreshold) {
-                return LanguageDetectionResult.unknown(
+                return LanguageDetectionResultDto.unknown(
                         String.format("Low confidence: %.2f (threshold: %.2f)",
                                 confidence, confidenceThreshold));
             }
 
-            return new LanguageDetectionResult(detectedLanguage, confidence, "apache-tika");
+            return new LanguageDetectionResultDto(detectedLanguage, confidence, "apache-tika");
 
         } catch (Exception e) {
             log.error("Error detecting language with Apache Tika: {}", e.getMessage(), e);
-            return LanguageDetectionResult.unknown("Detection error: " + e.getMessage());
+            return LanguageDetectionResultDto.unknown("Detection error: " + e.getMessage());
         }
     }
 
     private String cleanText(String text) {
-        // El método de limpieza es correcto, se mantiene igual
         if (text == null) {
             return "";
         }

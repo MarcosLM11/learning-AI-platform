@@ -44,12 +44,12 @@ public class DocumentsServiceImpl implements DocumentsService {
             String storagePath = documentsStorageService.uploadDocument(file);
 
             DocumentEntity document = DocumentEntity.builder()
+                    .userId(documentUploadRequestDto.userId())
                     .originalFilename(file.getOriginalFilename())
-                    .contentType(file.getContentType())
+                    .filePath(storagePath)
+                    .mimeType(file.getContentType())
                     .fileSize(file.getSize())
-                    .storagePath(storagePath)
                     .status(ProcessingStatus.UPLOADED)
-                    .uploadedAt(LocalDateTime.now())
                     .build();
 
             document = documentsRepository.save(document);

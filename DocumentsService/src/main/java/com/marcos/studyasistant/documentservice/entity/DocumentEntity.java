@@ -4,6 +4,9 @@ import com.marcos.studyasistant.documentservice.entity.enums.ProcessingStatus;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -15,6 +18,7 @@ import java.util.UUID;
 @Getter @Setter @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@EntityListeners(AuditingEntityListener.class)
 public class DocumentEntity {
     @Id
     @GeneratedValue(generator = "UUID")
@@ -55,9 +59,11 @@ public class DocumentEntity {
     private String processingError;
 
     @Column(name = "created_at")
+    @CreatedDate
     private LocalDateTime createdAt;
 
     @Column(name = "updated_at")
+    @LastModifiedDate
     private LocalDateTime updatedAt;
 
     @Column(name = "processed_at")

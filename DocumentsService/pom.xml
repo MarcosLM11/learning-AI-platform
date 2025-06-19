@@ -73,11 +73,11 @@
             <version>2.9.1</version>
         </dependency>
 
+        <!-- Language detection implementation -->
         <dependency>
             <groupId>org.apache.tika</groupId>
-            <artifactId>tika-langdetect</artifactId>
+            <artifactId>tika-langdetect-optimaize</artifactId>
             <version>2.9.1</version>
-            <type>pom</type>
         </dependency>
 
         <!-- Logging -->
@@ -159,6 +159,13 @@
         <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-bootstrap</artifactId>
+        </dependency>
+
+        <!-- To store Map in bd -->
+        <dependency>
+            <groupId>com.vladmihalcea</groupId>
+            <artifactId>hibernate-types-60</artifactId>
+            <version>2.21.1</version>
         </dependency>
 
     </dependencies>

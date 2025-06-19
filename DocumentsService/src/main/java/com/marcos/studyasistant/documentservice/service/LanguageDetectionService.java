@@ -1,8 +1,8 @@
 package com.marcos.studyasistant.documentservice.service;
 
-import com.marcos.studyasistant.documentservice.entity.LanguageDetectionResult;
+import com.marcos.studyasistant.documentservice.dto.LanguageDetectionResultDto;
 
 public interface LanguageDetectionService {
 
-    LanguageDetectionResult detectLanguage(String text);
+    LanguageDetectionResultDto detectLanguage(String text);
 }

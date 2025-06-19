@@ -1,22 +1,31 @@
 package com.marcos.studyasistant.documentservice.service.impl;
 
+import com.marcos.studyasistant.documentservice.dto.PageCountResultDto;
 import com.marcos.studyasistant.documentservice.entity.DocumentEntity;
-import com.marcos.studyasistant.documentservice.entity.LanguageDetectionResult;
+import com.marcos.studyasistant.documentservice.dto.LanguageDetectionResultDto;
 import com.marcos.studyasistant.documentservice.entity.enums.ProcessingStatus;
 import com.marcos.studyasistant.documentservice.exceptions.DocumentNotFoundException;
+import com.marcos.studyasistant.documentservice.exceptions.DocumentProcessingException;
 import com.marcos.studyasistant.documentservice.reposiroty.DocumentsRepository;
 import com.marcos.studyasistant.documentservice.service.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.tika.Tika;
 import org.springframework.stereotype.Service;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.math.BigDecimal;
+import java.nio.file.Files;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+
+import static com.google.common.io.Files.getFileExtension;
 
 @Service
 @Slf4j
@@ -27,17 +36,20 @@ public class DocumentsProcessingServiceImpl implements DocumentsProcessingServic
     private final DocumentsProcessingLogService documentsProcessingLogService;
     private final DocumentTagService documentTagService;
     private final LanguageDetectionService languageDetectionService;
+    private final PageCountService pageCountService;
 
     public DocumentsProcessingServiceImpl(DocumentsRepository documentsRepository,
                                            DocumentsStorageService documentsStorageService,
                                           DocumentsProcessingLogService documentsProcessingLogService,
                                           DocumentTagService documentTagService,
-                                          LanguageDetectionService languageDetectionService) {
+                                          LanguageDetectionService languageDetectionService,
+                                          PageCountService pageCountService) {
         this.documentsRepository = documentsRepository;
         this.documentsStorageService = documentsStorageService;
         this.documentsProcessingLogService = documentsProcessingLogService;
         this.documentTagService = documentTagService;
         this.languageDetectionService = languageDetectionService;
+        this.pageCountService = pageCountService;
     }
 
     @Override
@@ -47,10 +59,18 @@ public class DocumentsProcessingServiceImpl implements DocumentsProcessingServic
         DocumentEntity document = documentsRepository.findById(documentId)
                 .orElseThrow(() -> new DocumentNotFoundException("Document not found"));
 
+        File tempFile = null;
+
         try {
+            log.info("Starting processing for document: {}", document.getId());
+
             // Log the start of the processing step
             documentsProcessingLogService.logProcessingStep(document, "PROCESSING_STARTED", "SUCCESS",
                     Map.of("originalFilename", document.getOriginalFilename()));
+
+            tempFile = downloadToTempFile(document.getFilePath());
+
+            log.info("Downloading document from Minio: {}", document.getFilePath());
 
             // Update document status to PROCESSING
             document.setStatus(ProcessingStatus.PROCESSING);
@@ -58,8 +78,10 @@ public class DocumentsProcessingServiceImpl implements DocumentsProcessingServic
 
             // Extract text from the document
             long extractionStartTime = System.currentTimeMillis();
-            String extractedText = extractTextFromDocument(document.getFilePath());
+            String extractedText = extractTextFromDocument(tempFile);
             long extractionTime = System.currentTimeMillis() - extractionStartTime;
+
+            log.info("Text extracted from document {}: {} characters", document.getId(), extractedText.length());
 
             // Log the text extraction step
             document.setExtractedText(extractedText);
@@ -71,6 +93,8 @@ public class DocumentsProcessingServiceImpl implements DocumentsProcessingServic
             String language = detectDocumentLanguage(document, extractedText);
             long languageTime = System.currentTimeMillis() - languageStart;
 
+            log.info("Language detected for document {}: {}", document.getId(), language);
+
             // Log the language detection step
             document.setLanguageDetected(language);
             documentsProcessingLogService.logProcessingStep(document, "LANGUAGE_DETECTION", "SUCCESS",
@@ -78,7 +102,7 @@ public class DocumentsProcessingServiceImpl implements DocumentsProcessingServic
 
             // Count pages in the document
             long pageCountStart = System.currentTimeMillis();
-            Integer pageCount = countPages(document);
+            Integer pageCount = countPages(document, tempFile);
             long pageCountTime = System.currentTimeMillis() - pageCountStart;
 
             // Log the page count step
@@ -101,6 +125,8 @@ public class DocumentsProcessingServiceImpl implements DocumentsProcessingServic
             document.setProcessedAt(LocalDateTime.now());
             documentsRepository.save(document);
 
+            log.info("Document {} processed successfully", document.getId());
+
             // Log the completion of the processing step
             long totalTime = System.currentTimeMillis() - startTime;
             documentsProcessingLogService.logProcessingStep(document, "PROCESSING_COMPLETED", "SUCCESS",
@@ -109,6 +135,13 @@ public class DocumentsProcessingServiceImpl implements DocumentsProcessingServic
 
         } catch (Exception e) {
             handleProcessingError(document, e, System.currentTimeMillis() - startTime);
+        } finally {
+            if (tempFile != null && tempFile.exists()) {
+                if (!tempFile.delete()) {
+                    log.warn("Failed to delete temporary file: {}", tempFile.getAbsolutePath());
+                }
+                log.info("Deleting temporary file: {}", tempFile.getAbsolutePath());
+            }
         }
 
         return CompletableFuture.completedFuture(null);
@@ -125,6 +158,8 @@ public class DocumentsProcessingServiceImpl implements DocumentsProcessingServic
                         "errorClass", e.getClass().getSimpleName(),
                         "stackTrace", Arrays.toString(e.getStackTrace()).substring(0, Math.min(1000, Arrays.toString(e.getStackTrace()).length()))
                 ), processingTime);
+
+        log.error("Error processing document {}: {}", document.getId(), e.getMessage(), e);
     }
 
     private Map<String, BigDecimal> generateAutomaticTags(String text, String mimeType) {
@@ -149,19 +184,20 @@ public class DocumentsProcessingServiceImpl implements DocumentsProcessingServic
             tags.put("report", new BigDecimal("0.80"));
         }
 
+        log.info("Generated {} automatic tags for document: {}", tags.size(), text.length() > 50 ? text.substring(0, 50) + "..." : text);
+
         return tags;
     }
 
-    private String extractTextFromDocument(String storagePath) throws Exception {
-        try (InputStream inputStream = documentsStorageService.downloadDocument(storagePath)) {
-            Tika tika = new Tika();
-            return tika.parseToString(inputStream);
-        }
+    private String extractTextFromDocument(File tempFile) throws Exception {
+        Tika tika = new Tika();
+        FileInputStream inputStream = new FileInputStream(tempFile);
+        return tika.parseToString(inputStream);
     }
 
     private String detectDocumentLanguage(DocumentEntity document, String extractedText) {
         try {
-            LanguageDetectionResult result = languageDetectionService.detectLanguage(extractedText);
+            LanguageDetectionResultDto result = languageDetectionService.detectLanguage(extractedText);
 
             Map<String, Object> logDetails = new HashMap<>();
             logDetails.put("detectedLanguage", result.getLanguage());
@@ -200,7 +236,43 @@ public class DocumentsProcessingServiceImpl implements DocumentsProcessingServic
         }
     }
 
-    private Integer countPages(DocumentEntity document) {
-        return 1; // Placeholder for actual page counting logic
+    private Integer countPages(DocumentEntity document, File tempFile) {
+        try {
+            FileInputStream inputStream = new FileInputStream(tempFile);
+            PageCountResultDto pageCount = pageCountService.countPagesDetailed(document, inputStream);
+
+            if (pageCount != null) {
+                log.info("Page count for document {}: {} pages ({})",
+                        document.getId(), pageCount.getPageCount(), document.getMimeType());
+            } else {
+                log.info("Could not count pages for document {}: unsupported type {}",
+                        document.getId(), document.getMimeType());
+            }
+
+            return pageCount.getPageCount();
+
+        } catch (Exception e) {
+            log.error("Error counting pages for document {}: {}", document.getId(), e.getMessage(), e);
+            return null;
+        }
+    }
+
+    private File downloadToTempFile(String filePath) throws DocumentProcessingException {
+        try {
+            // Crear archivo temporal con extensión apropiada
+            File tempFile = Files.createTempFile("document_", getFileExtension(filePath)).toFile();
+
+            // Descargar de Minio al archivo temporal
+            try (InputStream minioStream = documentsStorageService.downloadDocument(filePath);
+                 FileOutputStream fos = new FileOutputStream(tempFile)) {
+
+                // Copiar contenido
+                minioStream.transferTo(fos);
+            }
+
+            return tempFile;
+        } catch (Exception e) {
+            throw new DocumentProcessingException("Failed to download to temp file :" + e);
+        }
     }
 }
