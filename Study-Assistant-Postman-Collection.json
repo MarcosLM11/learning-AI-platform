@@ -1,0 +1,461 @@
+{
+	"info": {
+		"_postman_id": "study-assistant-collection",
+		"name": "Study Assistant Platform",
+		"description": "Complete collection for testing the Study Assistant microservices platform",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Health Checks",
+			"item": [
+				{
+					"name": "Eureka Server Health",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8761/actuator/health",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8761",
+							"path": ["actuator", "health"]
+						}
+					}
+				},
+				{
+					"name": "Config Server Health",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8888/actuator/health",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8888",
+							"path": ["actuator", "health"]
+						}
+					}
+				},
+				{
+					"name": "Documents Service Health",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8081/actuator/health",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8081",
+							"path": ["actuator", "health"]
+						}
+					}
+				},
+				{
+					"name": "AI Processing Service Health",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8082/api/ai-processing/health",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8082",
+							"path": ["api", "ai-processing", "health"]
+						}
+					}
+				},
+				{
+					"name": "Summarization Service Health",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8083/api/summarization/health",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8083",
+							"path": ["api", "summarization", "health"]
+						}
+					}
+				},
+				{
+					"name": "QA Generation Service Health",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8084/api/qa-generation/health",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8084",
+							"path": ["api", "qa-generation", "health"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Users Service",
+			"item": [
+				{
+					"name": "Create User",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Test User\",\n  \"email\": \"test@example.com\",\n  \"password\": \"password123\"\n}"
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/users",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8080",
+							"path": ["api", "users"]
+						}
+					}
+				},
+				{
+					"name": "Get User by ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/users/{{userId}}",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8080",
+							"path": ["api", "users", "{{userId}}"]
+						}
+					}
+				},
+				{
+					"name": "Get All Users",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/users",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8080",
+							"path": ["api", "users"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Documents Service",
+			"item": [
+				{
+					"name": "Upload Document",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"userId\": \"{{userId}}\",\n  \"filename\": \"test-document.txt\",\n  \"fileContent\": \"VGhpcyBpcyBhIHRlc3QgZG9jdW1lbnQgZm9yIHRoZSBTdHVkeSBBc3Npc3RhbnQgcGxhdGZvcm0uIEl0IGNvbnRhaW5zIGluZm9ybWF0aW9uIGFib3V0IG1hY2hpbmUgbGVhcm5pbmcgYW5kIGFydGlmaWNpYWwgaW50ZWxsaWdlbmNlLiBNYWNoaW5lIGxlYXJuaW5nIGlzIGEgc3Vic2V0IG9mIGFydGlmaWNpYWwgaW50ZWxsaWdlbmNlLiBJdCBmb2N1c2VzIG9uIHRoZSB1c2Ugb2YgZGF0YSBhbmQgYWxnb3JpdGhtcyB0byBpbWl0YXRlIHRoZSB3YXkgaHVtYW5zIGxlYXJuLg==\",\n  \"mimeType\": \"text/plain\"\n}"
+						},
+						"url": {
+							"raw": "http://localhost:8081/api/documents/upload",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8081",
+							"path": ["api", "documents", "upload"]
+						}
+					}
+				},
+				{
+					"name": "Get Document by ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8081/api/documents/{{documentId}}",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8081",
+							"path": ["api", "documents", "{{documentId}}"]
+						}
+					}
+				},
+				{
+					"name": "Get Document Content",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8081/api/documents/{{documentId}}/content",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8081",
+							"path": ["api", "documents", "{{documentId}}", "content"]
+						}
+					}
+				},
+				{
+					"name": "Delete Document",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8081/api/documents/{{documentId}}",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8081",
+							"path": ["api", "documents", "{{documentId}}"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "AI Processing Service",
+			"item": [
+				{
+					"name": "Get Summary by Document ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8082/api/ai-processing/summaries/{{documentId}}",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8082",
+							"path": ["api", "ai-processing", "summaries", "{{documentId}}"]
+						}
+					}
+				},
+				{
+					"name": "Get QA by Document ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8082/api/ai-processing/qa/{{documentId}}",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8082",
+							"path": ["api", "ai-processing", "qa", "{{documentId}}"]
+						}
+					}
+				},
+				{
+					"name": "Get Summaries by User ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8082/api/ai-processing/summaries/user/{{userId}}",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8082",
+							"path": ["api", "ai-processing", "summaries", "user", "{{userId}}"]
+						}
+					}
+				},
+				{
+					"name": "Get QA by User ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8082/api/ai-processing/qa/user/{{userId}}",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8082",
+							"path": ["api", "ai-processing", "qa", "user", "{{userId}}"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Summarization Service",
+			"item": [
+				{
+					"name": "Generate Summary (Direct)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"documentId\": \"{{documentId}}\",\n  \"userId\": \"{{userId}}\",\n  \"text\": \"This is a test document for the Study Assistant platform. It contains information about machine learning and artificial intelligence. Machine learning is a subset of artificial intelligence. It focuses on the use of data and algorithms to imitate the way humans learn.\",\n  \"language\": \"en\",\n  \"originalFilename\": \"test-document.txt\",\n  \"maxSummaryLength\": 100\n}"
+						},
+						"url": {
+							"raw": "http://localhost:8083/api/summarization/summarize",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8083",
+							"path": ["api", "summarization", "summarize"]
+						}
+					}
+				},
+				{
+					"name": "Get Default Model",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8083/api/summarization/models/default",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8083",
+							"path": ["api", "summarization", "models", "default"]
+						}
+					}
+				},
+				{
+					"name": "Check Language Support",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8083/api/summarization/languages/en/supported",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8083",
+							"path": ["api", "summarization", "languages", "en", "supported"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "QA Generation Service",
+			"item": [
+				{
+					"name": "Generate Q&A (Direct)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"documentId\": \"{{documentId}}\",\n  \"userId\": \"{{userId}}\",\n  \"text\": \"This is a test document for the Study Assistant platform. It contains information about machine learning and artificial intelligence. Machine learning is a subset of artificial intelligence. It focuses on the use of data and algorithms to imitate the way humans learn.\",\n  \"language\": \"en\",\n  \"originalFilename\": \"test-document.txt\",\n  \"questionCount\": 5,\n  \"difficultyLevel\": \"MEDIUM\",\n  \"questionType\": \"CONCEPTUAL\"\n}"
+						},
+						"url": {
+							"raw": "http://localhost:8084/api/qa-generation/generate",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8084",
+							"path": ["api", "qa-generation", "generate"]
+						}
+					}
+				},
+				{
+					"name": "Get Default Model",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8084/api/qa-generation/models/default",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8084",
+							"path": ["api", "qa-generation", "models", "default"]
+						}
+					}
+				},
+				{
+					"name": "Get Max Questions",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8084/api/qa-generation/questions/max",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8084",
+							"path": ["api", "qa-generation", "questions", "max"]
+						}
+					}
+				},
+				{
+					"name": "Check Language Support",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8084/api/qa-generation/languages/en/supported",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8084",
+							"path": ["api", "qa-generation", "languages", "en", "supported"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Service Discovery",
+			"item": [
+				{
+					"name": "Eureka Dashboard",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8761",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8761"
+						}
+					}
+				},
+				{
+					"name": "Get All Registered Services",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:8761/eureka/apps",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8761",
+							"path": ["eureka", "apps"]
+						}
+					}
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "userId",
+			"value": "123e4567-e89b-12d3-a456-426614174000",
+			"type": "string"
+		},
+		{
+			"key": "documentId",
+			"value": "456e7890-e89b-12d3-a456-426614174001",
+			"type": "string"
+		}
+	]
+}
