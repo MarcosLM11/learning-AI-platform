@@ -52,7 +52,19 @@ services:
     volumes:
       - minio_data:/data
 
+  postgres_ai_db:
+    image: 'postgres:latest'
+    environment:
+      - 'POSTGRES_DB=sa_ai_db'
+      - 'POSTGRES_PASSWORD=postgres'
+      - 'POSTGRES_USER=postgres'
+    ports:
+      - '5434:5432'
+    volumes:
+      - 'postgres_ai_data:/var/lib/postgresql/data_ai_db'
+
 volumes:
   postgres_data:
   kafka-data:
   minio_data:
+  postgres_ai_data:

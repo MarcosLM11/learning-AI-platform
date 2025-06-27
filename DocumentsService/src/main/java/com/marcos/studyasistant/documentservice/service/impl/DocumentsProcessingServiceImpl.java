@@ -8,10 +8,10 @@ import com.marcos.studyasistant.documentservice.exceptions.DocumentNotFoundExcep
 import com.marcos.studyasistant.documentservice.exceptions.DocumentProcessingException;
 import com.marcos.studyasistant.documentservice.reposiroty.DocumentsRepository;
 import com.marcos.studyasistant.documentservice.service.*;
+import com.marcos.studyasistant.documentservice.utils.HashUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.tika.Tika;
 import org.springframework.stereotype.Service;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -37,19 +37,25 @@ public class DocumentsProcessingServiceImpl implements DocumentsProcessingServic
     private final DocumentTagService documentTagService;
     private final LanguageDetectionService languageDetectionService;
     private final PageCountService pageCountService;
+    private final HashUtil hashUtil;
+    private final DocumentEventPublisher documentEventPublisher;
 
     public DocumentsProcessingServiceImpl(DocumentsRepository documentsRepository,
                                            DocumentsStorageService documentsStorageService,
                                           DocumentsProcessingLogService documentsProcessingLogService,
                                           DocumentTagService documentTagService,
                                           LanguageDetectionService languageDetectionService,
-                                          PageCountService pageCountService) {
+                                          PageCountService pageCountService,
+                                          HashUtil hashUtil,
+                                          DocumentEventPublisher documentEventPublisher) {
         this.documentsRepository = documentsRepository;
         this.documentsStorageService = documentsStorageService;
         this.documentsProcessingLogService = documentsProcessingLogService;
         this.documentTagService = documentTagService;
         this.languageDetectionService = languageDetectionService;
         this.pageCountService = pageCountService;
+        this.hashUtil = hashUtil;
+        this.documentEventPublisher = documentEventPublisher;
     }
 
     @Override
@@ -87,6 +93,15 @@ public class DocumentsProcessingServiceImpl implements DocumentsProcessingServic
             document.setExtractedText(extractedText);
             documentsProcessingLogService.logProcessingStep(document, "TEXT_EXTRACTION", "SUCCESS",
                     Map.of("textLength", extractedText.length()), extractionTime);
+
+            // hash the extracted text + original filename to prevent duplicates
+            String hash = document.getOriginalFilename() + extractedText;
+            String documentHash = hashUtil.generateSHA256Hash(hash);
+            document.setHash(documentHash);
+
+            documentsProcessingLogService.logProcessingStep(document, "DOCUMENT_HASH", "SUCCESS",
+                    Map.of("textLength", extractedText.length()), extractionTime);
+
 
             // Detect language
             long languageStart = System.currentTimeMillis();
@@ -131,6 +146,9 @@ public class DocumentsProcessingServiceImpl implements DocumentsProcessingServic
             long totalTime = System.currentTimeMillis() - startTime;
             documentsProcessingLogService.logProcessingStep(document, "PROCESSING_COMPLETED", "SUCCESS",
                     Map.of("totalProcessingTimeMs", totalTime), totalTime);
+
+            // Publish event for AI processing
+            documentEventPublisher.publishDocumentProcessingCompleted(document);
 
 
         } catch (Exception e) {

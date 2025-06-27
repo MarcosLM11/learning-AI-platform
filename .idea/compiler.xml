@@ -10,15 +10,18 @@
         <module name="EurekaServer" />
         <module name="ConfigServer" />
       </profile>
-      <profile name="Annotation profile for DocumentService" enabled="true">
+      <profile name="Annotation profile for QAGenerationService" enabled="true">
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <processorPath useClasspath="false">
           <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.38/lombok-1.18.38.jar" />
         </processorPath>
-        <module name="DocumentsService" />
+        <module name="SummarizationService" />
+        <module name="QAGenerationService" />
         <module name="UsersService" />
+        <module name="AIProcessingService" />
+        <module name="DocumentsService" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
@@ -27,9 +30,12 @@
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
+      <module name="AIProcessingService" options="-parameters" />
       <module name="ConfigServer" options="-parameters" />
       <module name="DocumentsService" options="-parameters" />
       <module name="EurekaServer" options="-parameters" />
+      <module name="QAGenerationService" options="-parameters" />
+      <module name="SummarizationService" options="-parameters" />
       <module name="UsersService" options="-parameters" />
       <module name="config-server" options="-parameters" />
     </option>

@@ -58,6 +58,9 @@ public class DocumentEntity {
     @Column(name = "processing_error")
     private String processingError;
 
+    @Column(name = "hash", unique = true, length = 64)
+    private String hash;
+
     @Column(name = "created_at")
     @CreatedDate
     private LocalDateTime createdAt;

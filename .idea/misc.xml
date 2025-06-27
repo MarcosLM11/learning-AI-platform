@@ -10,6 +10,9 @@
         <option value="$PROJECT_DIR$/EurekaServer/pom.xml" />
         <option value="$PROJECT_DIR$/DocumentService/pom.xml" />
         <option value="$PROJECT_DIR$/DocumentsService/pom.xml" />
+        <option value="$PROJECT_DIR$/AIProcessingService/pom.xml" />
+        <option value="$PROJECT_DIR$/SummarizationService/pom.xml" />
+        <option value="$PROJECT_DIR$/QAGenerationService/pom.xml" />
       </list>
     </option>
     <option name="ignoredFiles">
