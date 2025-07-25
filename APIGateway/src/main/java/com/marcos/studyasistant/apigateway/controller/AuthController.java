@@ -34,7 +34,8 @@ public class AuthController {
                     // Credenciales válidas - generar token JWT
                     String token = jwtTokenProvider.generateToken(
                             userInfo.email(),
-                            userInfo.id()
+                            userInfo.id(),
+                            userInfo.role()
                     );
 
                     LoginResponseDto response = LoginResponseDto.builder()
@@ -70,7 +71,7 @@ public class AuthController {
             String token = authHeader.substring(7);
 
             if (jwtTokenProvider.validateToken(token)) {
-                String username = jwtTokenProvider.getUsernameFromToken(token);
+                String username = jwtTokenProvider.getClaimFromToken(token, "username");
                 return Mono.just(ResponseEntity.ok("Token válido para usuario: " + username));
             }
         }
@@ -90,7 +91,8 @@ public class AuthController {
                     // Usuario creado exitosamente - generar token JWT
                     String token = jwtTokenProvider.generateToken(
                             userInfo.email(),
-                            userInfo.id()
+                            userInfo.id(),
+                            userInfo.role()
                     );
 
                     LoginResponseDto response = LoginResponseDto.builder()

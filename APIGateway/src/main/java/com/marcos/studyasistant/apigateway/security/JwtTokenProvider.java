@@ -25,20 +25,20 @@ public class JwtTokenProvider {
     }
 
     //Generar token JWT
-    public String generateToken(String username, String userId) {
+    public String generateToken(String username, String userId, String role) {
         Date expiryDate = new Date(System.currentTimeMillis() + jwtExpirationMs);
 
         return Jwts.builder()
                 .subject(username)
                 .claim("userId", userId)
+                .claim("role", role)
                 .issuedAt(new Date())
                 .expiration(expiryDate)
                 .signWith(secretKey)
                 .compact();
     }
 
-    // Obtener username del token
-    public String getUsernameFromToken(String token) {
+    public String getClaimFromToken(String token, String claimKey) {
         try {
             Claims claims = Jwts.parser()
                     .verifyWith(secretKey)
@@ -46,25 +46,9 @@ public class JwtTokenProvider {
                     .parseSignedClaims(token)
                     .getPayload();
 
-            return claims.getSubject();
+            return claims.get(claimKey, String.class);
         } catch (JwtException | IllegalArgumentException e) {
-            log.error("Error al extraer username del token: {}", e.getMessage());
-            return null;
-        }
-    }
-
-    // Obtener userId del token
-    public String getUserIdFromToken(String token) {
-        try {
-            Claims claims = Jwts.parser()
-                    .verifyWith(secretKey)
-                    .build()
-                    .parseSignedClaims(token)
-                    .getPayload();
-
-            return claims.get("userId", String.class);
-        } catch (JwtException | IllegalArgumentException e) {
-            log.error("Error al extraer userId del token: {}", e.getMessage());
+            log.error("Error al extraer claim {} del token: {}", claimKey, e.getMessage());
             return null;
         }
     }
@@ -94,6 +78,4 @@ public class JwtTokenProvider {
             return false;
         }
     }
-
-
 }

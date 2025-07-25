@@ -1,5 +1,6 @@
 package com.marcos.studyasistant.apigateway.security;
 
+import com.marcos.studyasistant.apigateway.dto.enums.Role;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
@@ -55,16 +56,26 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
         }
 
         // Token válido - obtener información del usuario
-        String username = jwtTokenProvider.getUsernameFromToken(token);
-        String userId = jwtTokenProvider.getUserIdFromToken(token);
+        String username = jwtTokenProvider.getClaimFromToken(token, "username");
+        String userId = jwtTokenProvider.getClaimFromToken(token, "userId");
+        String role = jwtTokenProvider.getClaimFromToken(token, "role");
 
-        log.info("Usuario autenticado: {} (ID: {}) accediendo a: {}", username, userId, path);
+        log.info("Usuario autenticado: {} (ID: {}, Rol: {}) accediendo a: {}", username, userId, role, path);
+
+        // Verificar autorización por rol (básica)
+        if (!isAuthorizedForPath(path, method, role)) {
+            log.warn("Usuario {} con rol {} no autorizado para: {} {}",
+                    username, role, method, path);
+            exchange.getResponse().setStatusCode(HttpStatus.FORBIDDEN);
+            return exchange.getResponse().setComplete();
+        }
 
         // Agregar información del usuario al contexto
         ServerWebExchange mutatedExchange = exchange.mutate()
                 .request(originalRequest -> originalRequest
                         .header("X-User-Id", userId)
-                        .header("X-Username", username))
+                        .header("X-Username", username)
+                        .header("X-User-Role", role))
                 .build();
 
         log.info("Headers de usuario añadidos a la petición");
@@ -78,6 +89,20 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
                 path.startsWith("/actuator/") ||          // Health checks
                 path.equals("/") ||                       // Root
                 path.startsWith("/favicon.ico");          // Favicon
+    }
+
+    private boolean isAuthorizedForPath(String path, String method, String roleString) {
+        if (roleString == null) {
+            return false;
+        }
+        Role role = Role.fromString(roleString);
+        if (role == Role.ADMIN) {
+            return true;
+        }
+        if (role == Role.USER) {
+            return !path.contains("/admin/");  // Bloquear rutas admin
+        }
+        return false;
     }
 
     @Override
