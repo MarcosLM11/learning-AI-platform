@@ -4,6 +4,7 @@ import com.marcos.studyasistant.usersservice.dto.UserRequestDto;
 import com.marcos.studyasistant.usersservice.dto.UserResponseDto;
 import com.marcos.studyasistant.usersservice.dto.UserUpdateDto;
 import com.marcos.studyasistant.usersservice.entity.UserEntity;
+import com.marcos.studyasistant.usersservice.entity.enums.Role;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -17,6 +18,7 @@ public class UserMapper {
                 .name(userRequestDto.name())
                 .surname(userRequestDto.surname())
                 .phone(userRequestDto.phone())
+                .role(Role.valueOf(userRequestDto.role()))
                 .build();
     }
 
@@ -28,7 +30,8 @@ public class UserMapper {
                 userEntity.getEmail(),
                 userEntity.getName(),
                 userEntity.getSurname(),
-                userEntity.getPhone()
+                userEntity.getPhone(),
+                userEntity.getRole().getAuthority()
         );
     }
 

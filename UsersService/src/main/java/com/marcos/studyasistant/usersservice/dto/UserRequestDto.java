@@ -10,5 +10,6 @@ public record UserRequestDto (
         String email,
         String name,
         String surname,
-        String phone
+        String phone,
+        String role
 ) {}
