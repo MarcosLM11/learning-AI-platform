@@ -1,0 +1,7 @@
+server:
+  port: 8088
+
+# Configuraci?n local de emergencia por si Config Server falla
+spring:
+  application:
+    name: api-gateway

@@ -13,6 +13,7 @@
         <option value="$PROJECT_DIR$/AIProcessingService/pom.xml" />
         <option value="$PROJECT_DIR$/SummarizationService/pom.xml" />
         <option value="$PROJECT_DIR$/QAGenerationService/pom.xml" />
+        <option value="$PROJECT_DIR$/APIGateway/pom.xml" />
       </list>
     </option>
     <option name="ignoredFiles">

@@ -1,0 +1,22 @@
+spring:
+  application:
+    name: api-gateway
+
+  cloud:
+    config:
+      discovery:
+        enabled: true
+        service-id: config-server
+      fail-fast: true
+      retry:
+        initial-interval: 1000
+        max-attempts: 6
+
+  profiles:
+    active: dev
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+

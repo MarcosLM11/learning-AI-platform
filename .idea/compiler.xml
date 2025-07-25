@@ -10,7 +10,7 @@
         <module name="EurekaServer" />
         <module name="ConfigServer" />
       </profile>
-      <profile name="Annotation profile for QAGenerationService" enabled="true">
+      <profile name="Annotation profile for APIGateway" enabled="true">
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
@@ -19,6 +19,7 @@
         </processorPath>
         <module name="SummarizationService" />
         <module name="QAGenerationService" />
+        <module name="APIGateway" />
         <module name="UsersService" />
         <module name="AIProcessingService" />
         <module name="DocumentsService" />
@@ -31,6 +32,7 @@
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
       <module name="AIProcessingService" options="-parameters" />
+      <module name="APIGateway" options="-parameters" />
       <module name="ConfigServer" options="-parameters" />
       <module name="DocumentsService" options="-parameters" />
       <module name="EurekaServer" options="-parameters" />
