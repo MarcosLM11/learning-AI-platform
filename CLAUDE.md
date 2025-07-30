@@ -16,6 +16,7 @@ mvn clean install
 # Run a specific service (from service directory)
 cd EurekaServer && mvn spring-boot:run
 cd ConfigServer && mvn spring-boot:run  
+cd APIGateway && mvn spring-boot:run
 cd UsersService && mvn spring-boot:run
 cd DocumentsService && mvn spring-boot:run
 cd AIProcessingService && mvn spring-boot:run
@@ -55,7 +56,10 @@ docker-compose logs -f [service_name]
    - **EurekaServer** (port 8761) - Service discovery registry
    - **ConfigServer** (port 8888) - Centralized configuration from Git repository
 
-3. **Business Services** (can start in parallel after core services):
+3. **Gateway Layer**:
+   - **APIGateway** (port 8088) - Authentication, authorization, and request routing
+
+4. **Business Services** (can start in parallel after core services):
    - **UsersService** (port 8080) - User management with PostgreSQL
    - **DocumentsService** (port 8081) - Document processing with PostgreSQL, MinIO, and Kafka
    - **AIProcessingService** (port 8082) - AI processing coordinator for summaries and Q&A
@@ -185,6 +189,33 @@ DocumentQA → DocumentEntity (via documentId)
 - Basic authentication (admin/admin123)
 - Custom eviction and renewal intervals
 
+### APIGateway
+- **Purpose**: Centralized entry point for all client requests with authentication and authorization
+- **Port**: 8088
+- **Authentication**: JWT-based with role-based access control (RBAC)
+- **Technology Stack**: Spring Cloud Gateway with WebFlux (reactive programming)
+- **Key Features**:
+  - JWT token generation and validation
+  - Role-based authorization (USER, ADMIN roles)
+  - Global security filter for all protected routes
+  - CORS configuration for cross-origin requests
+  - Health monitoring integration with downstream services
+- **Security Implementation**:
+  - `JwtAuthenticationFilter`: Global filter (order -100) for token validation
+  - `JwtTokenProvider`: Token generation, validation, and claims extraction
+  - Public routes: `/api/auth/**`, `/actuator/**`, `/`, `/favicon.ico`
+  - Protected routes: All others require valid JWT tokens
+  - Admin-only routes: `/admin/**` paths restricted to ADMIN role
+- **Service Integration**:
+  - WebClient-based calls to UserService for authentication
+  - Load-balanced service discovery via Eureka (`lb://users-service`)
+  - Custom exception handling for authentication errors
+- **Current Limitations**:
+  - No explicit gateway route configuration (relies on manual WebClient calls)
+  - Missing rate limiting, circuit breaker patterns
+  - No request/response transformation capabilities
+  - Limited monitoring and metrics for gateway-specific operations
+
 ## Technology Stack
 
 ### Core Framework
@@ -233,15 +264,23 @@ DocumentQA → DocumentEntity (via documentId)
 ## API Documentation
 
 ### Base URLs
-- **UsersService**: `http://localhost:8080/api/users`
-- **DocumentsService**: `http://localhost:8081/api/documents`  
-- **AIProcessingService**: `http://localhost:8082/api/ai-processing`
-- **SummarizationService**: `http://localhost:8083/api/summarization`
-- **QAGenerationService**: `http://localhost:8084/api/qa-generation`
+- **APIGateway**: `http://localhost:8088/api` (Main entry point for all clients)
+- **UsersService**: `http://localhost:8080/api/users` (Direct access)
+- **DocumentsService**: `http://localhost:8081/api/documents` (Direct access)
+- **AIProcessingService**: `http://localhost:8082/api/ai-processing` (Direct access)
+- **SummarizationService**: `http://localhost:8083/api/summarization` (Direct access)
+- **QAGenerationService**: `http://localhost:8084/api/qa-generation` (Direct access)
 - **EurekaServer**: `http://localhost:8761` (Dashboard)
 - **ConfigServer**: `http://localhost:8888` (Configuration)
 
 ### Key Endpoints
+
+#### API Gateway (Port 8088)
+- `POST /api/auth/login` - User authentication with email/password
+- `POST /api/auth/register` - User registration with auto-login
+- `GET /api/auth/validate` - JWT token validation (requires Authorization header)
+- `GET /actuator/health` - Gateway health status
+- `GET /actuator/health/services` - Downstream services health status
 
 #### Users Service (Port 8080)
 - `POST /api/users` - Create new user

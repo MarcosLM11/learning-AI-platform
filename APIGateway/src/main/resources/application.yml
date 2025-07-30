@@ -1,5 +1,8 @@
 server:
   port: 8088
+  netty:
+    max-initial-line-length: 16384
+    max-header-size: 16384
 
 # Configuraci?n local de emergencia por si Config Server falla
 spring:

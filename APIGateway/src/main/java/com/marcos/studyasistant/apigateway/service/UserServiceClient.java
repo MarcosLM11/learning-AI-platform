@@ -7,7 +7,6 @@ import com.marcos.studyasistant.apigateway.exception.UserAlreadyExistsException;
 import com.marcos.studyasistant.apigateway.exception.UserCreationException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
@@ -36,7 +35,8 @@ public class UserServiceClient {
                         return Mono.just(new UserInfo(
                                 user.id().toString(),
                                 user.email(),
-                                user.name()
+                                user.name(),
+                                user.role()
                         ));
                     } else {
                         log.warn("Contraseña inválida para usuario: {}", email);
@@ -70,7 +70,8 @@ public class UserServiceClient {
                     return new UserInfo(
                             userDto.id().toString(),
                             userDto.email(),
-                            userDto.name()
+                            userDto.name(),
+                            userDto.role()
                     );
                 })
                 .doOnError( error ->
