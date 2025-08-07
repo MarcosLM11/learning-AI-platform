@@ -18,7 +18,7 @@ public class UserMapper {
                 .name(userRequestDto.name())
                 .surname(userRequestDto.surname())
                 .phone(userRequestDto.phone())
-                .role(Role.valueOf(userRequestDto.role()))
+                .role(userRequestDto.role().equals(Role.USER.getAuthority()) ? Role.USER : Role.ADMIN )
                 .build();
     }
 

@@ -25,5 +25,9 @@ public record RegisterRequestDto(
         String password,
 
         @Pattern(regexp = "^\\+?[0-9]{10,15}$", message = "El formato del teléfono no es válido")
-        String phone
+        String phone,
+
+        @NotBlank(message = "El rol es requerido")
+        @Pattern(regexp = "^(ROLE_USER|ROLE_ADMIN)$", message = "El rol debe ser USER o ADMIN")
+        String role
 ) {}
