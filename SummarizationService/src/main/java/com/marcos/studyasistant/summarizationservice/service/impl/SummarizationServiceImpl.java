@@ -1,5 +1,6 @@
 package com.marcos.studyasistant.summarizationservice.service.impl;
 
+import com.marcos.studyasistant.summarizationservice.client.HuggingFaceClient;
 import com.marcos.studyasistant.summarizationservice.dto.SummarizationRequest;
 import com.marcos.studyasistant.summarizationservice.dto.SummarizationResponse;
 import com.marcos.studyasistant.summarizationservice.service.SummarizationService;
@@ -9,7 +10,7 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
 @Service
@@ -17,26 +18,40 @@ import java.util.concurrent.CompletableFuture;
 @Slf4j
 public class SummarizationServiceImpl implements SummarizationService {
 
+    private final HuggingFaceClient huggingFaceClient;
+
+    private static final Map<String, String> LANGUAGE_MODELS = Map.of(
+            "en", "facebook/bart-large-cnn",
+            "es", "facebook/bart-large-cnn", // También funciona para español
+            "fr", "facebook/bart-large-cnn"
+    );
+
+    private static final Set<String> SUPPORTED_LANGUAGES = Set.of("en", "es", "fr");
+
     @Override
     @Async("summarizationTaskExecutor")
     public CompletableFuture<SummarizationResponse> summarizeText(SummarizationRequest request) {
         log.info("Starting summarization for document: {}", request.getDocumentId());
-        
+
         long startTime = System.currentTimeMillis();
-        
+
         try {
-            // TODO: Implement Hugging Face integration here
-            // This is where you'll add the actual AI model call
-            
-            // Placeholder implementation
-            String summaryText = generatePlaceholderSummary(request.getText());
+            String language = extractLanguageCode(request.getLanguage());
+
+            if (!isLanguageSupported(language)) {
+                throw new IllegalArgumentException("Language not supported: " + language);
+            }
+
+            String model = getModelForLanguage(language);
+            String summaryText = huggingFaceClient.summarizeText(request.getText(), model);
+
             long processingTime = System.currentTimeMillis() - startTime;
-            
+
             SummarizationResponse response = SummarizationResponse.builder()
                     .summaryId(UUID.randomUUID())
                     .documentId(request.getDocumentId())
                     .summaryText(summaryText)
-                    .modelUsed(getDefaultModel())
+                    .modelUsed(model)
                     .summaryLength(summaryText.length())
                     .originalTextLength(request.getText().length())
                     .compressionRatio((double) summaryText.length() / request.getText().length())
@@ -44,15 +59,15 @@ public class SummarizationServiceImpl implements SummarizationService {
                     .createdAt(LocalDateTime.now())
                     .status("COMPLETED")
                     .build();
-            
-            log.info("Summarization completed for document: {} in {}ms", 
-                request.getDocumentId(), processingTime);
-            
+
+            log.info("Summarization completed for document: {} in {}ms",
+                    request.getDocumentId(), processingTime);
+
             return CompletableFuture.completedFuture(response);
-            
+
         } catch (Exception e) {
             log.error("Error summarizing document {}: {}", request.getDocumentId(), e.getMessage(), e);
-            
+
             SummarizationResponse errorResponse = SummarizationResponse.builder()
                     .summaryId(UUID.randomUUID())
                     .documentId(request.getDocumentId())
@@ -60,7 +75,7 @@ public class SummarizationServiceImpl implements SummarizationService {
                     .processingTimeMs(System.currentTimeMillis() - startTime)
                     .createdAt(LocalDateTime.now())
                     .build();
-            
+
             return CompletableFuture.completedFuture(errorResponse);
         }
     }
@@ -69,35 +84,46 @@ public class SummarizationServiceImpl implements SummarizationService {
     @Async("summarizationTaskExecutor")
     public CompletableFuture<Void> processSummarizationRequest(String text, String language, int maxLength) {
         log.info("Processing summarization request for text length: {}, language: {}", text.length(), language);
-        
-        // TODO: Add your Hugging Face processing logic here
-        
+
+        try {
+            String languageCode = extractLanguageCode(language);
+
+            if (!isLanguageSupported(languageCode)) {
+                log.warn("Unsupported language: {}", languageCode);
+                return CompletableFuture.completedFuture(null);
+            }
+
+            String model = getModelForLanguage(languageCode);
+            String summary = huggingFaceClient.summarizeText(text, model);
+
+            log.info("Summarization completed. Original: {} chars, Summary: {} chars",
+                    text.length(), summary.length());
+
+        } catch (Exception e) {
+            log.error("Error processing summarization request: {}", e.getMessage(), e);
+        }
+
         return CompletableFuture.completedFuture(null);
     }
 
     @Override
     public boolean isLanguageSupported(String language) {
-        // TODO: Implement language support check based on your models
-        return language != null && (language.startsWith("en") || language.startsWith("es") || language.startsWith("fr"));
+        if (language == null) return false;
+        String languageCode = extractLanguageCode(language);
+        return SUPPORTED_LANGUAGES.contains(languageCode);
     }
 
     @Override
     public String getDefaultModel() {
-        // TODO: Return your preferred Hugging Face model name
         return "facebook/bart-large-cnn";
     }
-    
-    private String generatePlaceholderSummary(String text) {
-        // Placeholder implementation - replace with actual Hugging Face call
-        if (text.length() <= 200) {
-            return text;
-        }
-        
-        String[] sentences = text.split("\\.");
-        if (sentences.length <= 2) {
-            return text;
-        }
-        
-        return sentences[0] + "." + (sentences.length > 1 ? sentences[1] + "." : "");
+
+    private String getModelForLanguage(String language) {
+        return LANGUAGE_MODELS.getOrDefault(language, getDefaultModel());
+    }
+
+    private String extractLanguageCode(String language) {
+        if (language == null) return "en";
+        return language.toLowerCase().substring(0, Math.min(2, language.length()));
     }
 }
