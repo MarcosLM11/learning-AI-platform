@@ -1,32 +1,35 @@
 package com.marcos.studyasistant.summarizationservice.service.impl;
 
-import com.marcos.studyasistant.summarizationservice.client.HuggingFaceClient;
+
 import com.marcos.studyasistant.summarizationservice.dto.SummarizationRequest;
 import com.marcos.studyasistant.summarizationservice.dto.SummarizationResponse;
 import com.marcos.studyasistant.summarizationservice.service.SummarizationService;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
-
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 @Service
-@RequiredArgsConstructor
 @Slf4j
 public class SummarizationServiceImpl implements SummarizationService {
 
-    private final HuggingFaceClient huggingFaceClient;
+    private final ChatClient chatClient;
 
-    private static final Map<String, String> LANGUAGE_MODELS = Map.of(
-            "en", "facebook/bart-large-cnn",
-            "es", "facebook/bart-large-cnn", // También funciona para español
-            "fr", "facebook/bart-large-cnn"
-    );
+    private static final String PROMPT_TEMPLATE = "Eres un experto en resúmenes de documentos." +
+            " Tu tarea es resumir el siguiente texto de manera concisa y clara." +
+            "Por favor, proporciona un resumen que contenga toda la información importante" +
+            " para que una persona pueda usarlo para estudiar sin necesidad de tener que leer el documento entero." +
+            "El resumen debe de ser completo y la salida tiene que ser directamente el resumen del texto.";
 
     private static final Set<String> SUPPORTED_LANGUAGES = Set.of("en", "es", "fr");
+
+    public SummarizationServiceImpl(ChatClient.Builder chatClient) {
+        this.chatClient = chatClient.build();
+    }
 
     @Override
     @Async("summarizationTaskExecutor")
@@ -42,8 +45,7 @@ public class SummarizationServiceImpl implements SummarizationService {
                 throw new IllegalArgumentException("Language not supported: " + language);
             }
 
-            String model = getModelForLanguage(language);
-            String summaryText = huggingFaceClient.summarizeText(request.getText(), model);
+            String summaryText = chatClient.prompt(PROMPT_TEMPLATE).user(request.getText()).call().content();
 
             long processingTime = System.currentTimeMillis() - startTime;
 
@@ -51,7 +53,7 @@ public class SummarizationServiceImpl implements SummarizationService {
                     .summaryId(UUID.randomUUID())
                     .documentId(request.getDocumentId())
                     .summaryText(summaryText)
-                    .modelUsed(model)
+                    .modelUsed("qwen3")
                     .summaryLength(summaryText.length())
                     .originalTextLength(request.getText().length())
                     .compressionRatio((double) summaryText.length() / request.getText().length())
@@ -93,11 +95,10 @@ public class SummarizationServiceImpl implements SummarizationService {
                 return CompletableFuture.completedFuture(null);
             }
 
-            String model = getModelForLanguage(languageCode);
-            String summary = huggingFaceClient.summarizeText(text, model);
+            String summaryText = chatClient.prompt(PROMPT_TEMPLATE).user(text).call().content();
 
             log.info("Summarization completed. Original: {} chars, Summary: {} chars",
-                    text.length(), summary.length());
+                    text.length(), summaryText.length());
 
         } catch (Exception e) {
             log.error("Error processing summarization request: {}", e.getMessage(), e);
@@ -116,10 +117,6 @@ public class SummarizationServiceImpl implements SummarizationService {
     @Override
     public String getDefaultModel() {
         return "facebook/bart-large-cnn";
-    }
-
-    private String getModelForLanguage(String language) {
-        return LANGUAGE_MODELS.getOrDefault(language, getDefaultModel());
     }
 
     private String extractLanguageCode(String language) {

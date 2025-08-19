@@ -10,7 +10,7 @@ public interface AIProcessingCoordinatorService {
     
     CompletableFuture<Void> processDocument(DocumentProcessingCompletedEvent event);
     
-    CompletableFuture<Void> requestSummarization(UUID documentId, AIProcessingType processingType);
+    CompletableFuture<Void> requestSummarization(DocumentProcessingCompletedEvent event, AIProcessingType processingType);
     
-    CompletableFuture<Void> requestQAGeneration(UUID documentId, AIProcessingType processingType);
+    CompletableFuture<Void> requestQAGeneration(DocumentProcessingCompletedEvent event, AIProcessingType processingType);
 }

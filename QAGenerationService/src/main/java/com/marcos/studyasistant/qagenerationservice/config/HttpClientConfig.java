@@ -1,11 +1,11 @@
-package com.marcos.studyasistant.summarizationservice.config;
+package com.marcos.studyasistant.qagenerationservice.config;
 
+import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.client.RestTemplate;
 
 import java.time.Duration;
-import org.springframework.boot.web.client.RestTemplateBuilder;
 
 @Configuration
 public class HttpClientConfig {

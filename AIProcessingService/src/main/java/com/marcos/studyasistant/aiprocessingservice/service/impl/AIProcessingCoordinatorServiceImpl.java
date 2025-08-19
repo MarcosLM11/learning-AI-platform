@@ -46,8 +46,8 @@ public class AIProcessingCoordinatorServiceImpl implements AIProcessingCoordinat
             }
 
             // Process both summarization and QA generation by default
-            requestSummarization(event.getDocumentId(), AIProcessingType.BOTH).get();
-            requestQAGeneration(event.getDocumentId(), AIProcessingType.BOTH).get();
+            requestSummarization(event, AIProcessingType.BOTH).get();
+            requestQAGeneration(event, AIProcessingType.BOTH).get();
 
             log.info("AI processing requests sent for document: {}", event.getDocumentId());
 
@@ -60,34 +60,41 @@ public class AIProcessingCoordinatorServiceImpl implements AIProcessingCoordinat
 
     @Override
     @Async("aiProcessingTaskExecutor")
-    public CompletableFuture<Void> requestSummarization(UUID documentId, AIProcessingType processingType) {
+    public CompletableFuture<Void> requestSummarization(DocumentProcessingCompletedEvent event, AIProcessingType processingType) {
         try {
             // Check if summary already exists
-            if (documentSummaryRepository.existsByDocumentId(documentId)) {
-                log.info("Summary already exists for document: {}", documentId);
+            if (documentSummaryRepository.existsByDocumentId(event.getDocumentId())) {
+                log.info("Summary already exists for document: {}", event.getDocumentId());
                 return CompletableFuture.completedFuture(null);
             }
 
             // Create DocumentSummary entity
             DocumentSummary summary = DocumentSummary.builder()
-                    .documentId(documentId)
+                    .userId(event.getUserId())
+                    .documentId(event.getDocumentId())
+                    .summaryText("")
                     .status(AIProcessingStatus.REQUESTED)
                     .build();
 
             summary = documentSummaryRepository.save(summary);
-            log.info("Created summary entity with ID: {} for document: {}", summary.getId(), documentId);
+            log.info("Created summary entity with ID: {} for document: {}", summary.getId(), event.getDocumentId());
 
             // Send event to summarization service
-            SummarizationRequestedEvent event = SummarizationRequestedEvent.builder()
-                    .documentId(documentId)
+            SummarizationRequestedEvent eventRequest = SummarizationRequestedEvent.builder()
+                    .userId(event.getUserId())
+                    .extractedText(event.getExtractedText())
+                    .languageDetected(event.getLanguageDetected())
+                    .originalFilename(event.getOriginalFilename())
+                    .extractedText(event.getExtractedText())
+                    .documentId(event.getDocumentId())
                     .summaryId(summary.getId())
                     .build();
 
-            kafkaTemplate.send(SUMMARIZATION_TOPIC, event);
-            log.info("Sent summarization request for document: {}", documentId);
+            kafkaTemplate.send(SUMMARIZATION_TOPIC, eventRequest);
+            log.info("Sent summarization request for document: {}", event.getDocumentId());
 
         } catch (Exception e) {
-            log.error("Error requesting summarization for document {}: {}", documentId, e.getMessage(), e);
+            log.error("Error requesting summarization for document {}: {}", event.getDocumentId(), e.getMessage(), e);
         }
 
         return CompletableFuture.completedFuture(null);
@@ -95,35 +102,39 @@ public class AIProcessingCoordinatorServiceImpl implements AIProcessingCoordinat
 
     @Override
     @Async("aiProcessingTaskExecutor")
-    public CompletableFuture<Void> requestQAGeneration(UUID documentId, AIProcessingType processingType) {
+    public CompletableFuture<Void> requestQAGeneration(DocumentProcessingCompletedEvent event, AIProcessingType processingType) {
         try {
             // Check if QA already exists
-            if (documentQARepository.existsByDocumentId(documentId)) {
-                log.info("QA already exists for document: {}", documentId);
+            if (documentQARepository.existsByDocumentId(event.getDocumentId())) {
+                log.info("QA already exists for document: {}", event.getDocumentId());
                 return CompletableFuture.completedFuture(null);
             }
 
             // Create DocumentQA entity
             DocumentQA qa = DocumentQA.builder()
-                    .documentId(documentId)
+                    .userId(event.getUserId())
+                    .documentId(event.getDocumentId())
                     .status(AIProcessingStatus.REQUESTED)
                     .build();
 
             qa = documentQARepository.save(qa);
-            log.info("Created QA entity with ID: {} for document: {}", qa.getId(), documentId);
+            log.info("Created QA entity with ID: {} for document: {}", qa.getId(), event.getDocumentId());
 
             // Send event to QA generation service
-            QAGenerationRequestedEvent event = QAGenerationRequestedEvent.builder()
-                    .documentId(documentId)
-                    .qaId(qa.getId())
-                    .desiredQuestionCount(5) // Default question count
+            QAGenerationRequestedEvent eventRequest = QAGenerationRequestedEvent.builder()
+                    .userId(event.getUserId())
+                    .extractedText(event.getExtractedText())
+                    .languageDetected(event.getLanguageDetected())
+                    .originalFilename(event.getOriginalFilename())
+                    .extractedText(event.getExtractedText())
+                    .documentId(event.getDocumentId())
                     .build();
 
-            kafkaTemplate.send(QA_GENERATION_TOPIC, event);
-            log.info("Sent QA generation request for document: {}", documentId);
+            kafkaTemplate.send(QA_GENERATION_TOPIC, eventRequest);
+            log.info("Sent QA generation request for document: {}", event.getDocumentId());
 
         } catch (Exception e) {
-            log.error("Error requesting QA generation for document {}: {}", documentId, e.getMessage(), e);
+            log.error("Error requesting QA generation for document {}: {}", event.getDocumentId(), e.getMessage(), e);
         }
 
         return CompletableFuture.completedFuture(null);

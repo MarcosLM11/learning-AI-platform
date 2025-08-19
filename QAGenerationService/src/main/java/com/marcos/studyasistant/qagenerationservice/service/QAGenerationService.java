@@ -12,8 +12,4 @@ public interface QAGenerationService {
     CompletableFuture<Void> processQAGenerationRequest(String text, String language, int questionCount);
     
     boolean isLanguageSupported(String language);
-    
-    String getDefaultModel();
-    
-    int getMaxQuestions();
 }
