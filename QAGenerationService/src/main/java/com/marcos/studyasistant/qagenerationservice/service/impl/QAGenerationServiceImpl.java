@@ -24,7 +24,8 @@ public class QAGenerationServiceImpl implements QAGenerationService {
             " The questions should be suitable for a study context, allowing users to test their understanding of" +
             " the material. It should contain a variety of questions types like HARD, EXTREME HARD , MEDIUM, EASY and VERY EASY." +
             " The output should be directly the questions and the answer to each question." +
-            " Should be 20 questions in total.";
+            " Should be 20 questions in total." +
+            " And must have this format: Question: <question text> Answer: <answer text>, separating each question-answer pair with a @.";
 
     private static final Set<String> SUPPORTED_LANGUAGES = Set.of("en", "es", "fr");
 
@@ -83,20 +84,25 @@ public class QAGenerationServiceImpl implements QAGenerationService {
 
     private List<QAGenerationResponse.QuestionAnswerDto> processModelAnswer(String questionsAndAnswerText) {
         List<QAGenerationResponse.QuestionAnswerDto> response = new ArrayList<>();
-        String[] lines = questionsAndAnswerText.split("\n");
-        for (String line : lines) {
-            String[] parts = line.split(":", 2);
+
+        List<String> qaPairs = Arrays.asList(questionsAndAnswerText.split("@"));
+        for (String pair : qaPairs) {
+            String[] parts = pair.split("Answer:", 2);
             if (parts.length == 2) {
-                String question = parts[0].trim();
-                String answer = parts[1].trim();
-                QAGenerationResponse.QuestionAnswerDto questionAnswerDto = QAGenerationResponse.QuestionAnswerDto.builder()
-                        .question(question)
-                        .answer(answer)
-                        .difficultyLevel("MEDIUM") // Default difficulty, can be enhanced later
-                        .questionType("GENERAL") // Default type, can be enhanced later
-                        .confidenceScore(1.0) // Default confidence score, can be enhanced later
-                        .build();
-                response.add(questionAnswerDto);
+                String questionPart = parts[0].trim();
+                String answerPart = parts[1].trim();
+                if (questionPart.startsWith("Question:")) {
+                    String question = questionPart.substring("Question:".length()).trim();
+                    String answer = answerPart.trim();
+                    QAGenerationResponse.QuestionAnswerDto questionAnswerDto = QAGenerationResponse.QuestionAnswerDto.builder()
+                            .question(question)
+                            .answer(answer)
+                            .difficultyLevel("MEDIUM") // Default difficulty, can be enhanced later
+                            .questionType("GENERAL") // Default type, can be enhanced later
+                            .confidenceScore(1.0) // Default confidence score, can be enhanced later
+                            .build();
+                    response.add(questionAnswerDto);
+                }
             }
         }
         return response;
