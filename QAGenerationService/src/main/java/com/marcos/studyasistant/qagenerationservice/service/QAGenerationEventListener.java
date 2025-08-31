@@ -23,7 +23,7 @@ public class QAGenerationEventListener {
 
     private static final String QA_GENERATION_COMPLETED_TOPIC = "document.qa.completed";
 
-    @KafkaListener(topics = "document.qa.requested", groupId = "qa-generation-service")
+    @KafkaListener(topics = "qa-requests")
     public void handleQAGenerationRequested(QAGenerationRequestedEvent event) {
         log.info("Received Q&A generation request for document: {}", event.getDocumentId());
         

@@ -20,7 +20,7 @@ public class SummarizationEventListener {
 
     private static final String SUMMARIZATION_COMPLETED_TOPIC = "document.summarization.completed";
 
-    @KafkaListener(topics = "document.summarization.requested", groupId = "summarization-service")
+    @KafkaListener(topics = "sum-requests")
     public void handleSummarizationRequested(SummarizationRequestedEvent event) {
         log.info("Received summarization request for document: {}", event.getDocumentId());
         

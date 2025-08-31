@@ -32,22 +32,6 @@ public class QAGenerationController {
                 });
     }
 
-    @GetMapping("/models/default")
-    public ResponseEntity<String> getDefaultModel() {
-        return ResponseEntity.ok(qaGenerationService.getDefaultModel());
-    }
-
-    @GetMapping("/languages/{language}/supported")
-    public ResponseEntity<Boolean> isLanguageSupported(@PathVariable String language) {
-        boolean supported = qaGenerationService.isLanguageSupported(language);
-        return ResponseEntity.ok(supported);
-    }
-
-    @GetMapping("/questions/max")
-    public ResponseEntity<Integer> getMaxQuestions() {
-        return ResponseEntity.ok(qaGenerationService.getMaxQuestions());
-    }
-
     @GetMapping("/health")
     public ResponseEntity<String> health() {
         return ResponseEntity.ok("Q&A Generation Service is running");

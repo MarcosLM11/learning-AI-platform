@@ -28,8 +28,8 @@ public class AIProcessingCoordinatorServiceImpl implements AIProcessingCoordinat
     private final DocumentQARepository documentQARepository;
     private final KafkaTemplate<String, Object> kafkaTemplate;
 
-    private static final String SUMMARIZATION_TOPIC = "document.summarization.requested";
-    private static final String QA_GENERATION_TOPIC = "document.qa.requested";
+    private static final String SUMMARIZATION_TOPIC = "sum-requests";
+    private static final String QA_GENERATION_TOPIC = "qa-requests";
 
     @Override
     @Async("aiProcessingTaskExecutor")
